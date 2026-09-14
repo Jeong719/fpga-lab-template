@@ -1,16 +1,17 @@
-# FPGA LAB1 — 직접 작성하는 프로젝트 틀
+# FPGA LAB1·LAB2 — 직접 작성하는 프로젝트 틀 (v2.0.1)
 
 **프로젝트 하나, workspace 하나입니다.** 모든 실습은 같은 저장소를 새 이름으로 clone하고 PDF를 보며 Verilog·테스트벤치·핀 제약을 직접 작성합니다. 완성 회로와 예시 프로젝트는 들어 있지 않습니다.
 
 ## 1. 새 프로젝트 만들기
 
 ```sh
-git clone https://github.com/Glaysia/fpga-lab-template.git new_project_name
+git clone --branch v2.0.1 https://github.com/Glaysia/fpga-lab-template.git new_project_name
 cd new_project_name
+git switch -c main
 code LAB1.code-workspace
 ```
 
-`new_project_name`을 이번 실습 이름으로 바꾸세요. 다음 회로도 같은 URL을 다른 폴더 이름으로 clone합니다. 고정된 수업 버전은 clone 명령에 `--branch v2.0.0`을 추가하면 됩니다.
+`new_project_name`을 이번 실습 이름으로 바꾸세요. 다음 회로도 같은 URL과 태그를 다른 폴더 이름으로 clone합니다. 태그 clone 직후의 detached HEAD 안내는 정상이며, `git switch -c main`으로 자신의 작업 브랜치를 만듭니다. LAB2도 파일명 `LAB1.code-workspace`를 그대로 사용합니다.
 
 VS Code 메뉴로 열 때는 **File → New Window → Open Workspace from File... → 방금 만든 폴더의 LAB1.code-workspace**를 선택합니다.
 
@@ -53,6 +54,23 @@ Windows 터미널에서는 `python --version`, Linux/macOS에서는 `python3 --v
 Windows에서 WSL로 실습한다면 [WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) (`ms-vscode-remote.remote-wsl`)도 별도로 설치하세요. HDL·파형 확장은 WSL 창에서 필요할 경우 **Install in WSL**로 설치합니다. WSL을 사용하지 않는 Windows·Linux·macOS에는 이 추가 확장이 필요하지 않습니다.
 
 확장을 설치해도 Python·Icarus 실행 파일이 자동으로 준비되는 것은 아닙니다. 앞의 도구 설치와 01 Check tools도 수행해야 합니다.
+
+### slang 버전과 진단 확인
+
+이 버전의 확인 기준은 **slang 확장 0.3.0 / slang-server 0.3.0**입니다. 추천 목록은 설치할 확장의 ID이며 특정 버전을 설치하거나 서버를 업데이트하는 기능은 아닙니다. slang은 편집·진단 도구이고, **02 Simulate는 Icarus `iverilog`·`vvp`로 실행합니다.** Vivado의 Run Behavioral Simulation은 XSim입니다.
+
+1. Extensions에서 `@installed slang`을 검색하고 확장 상세의 버전을 확인합니다. Update가 표시되면 누르고 재로드합니다. 수업 기준 버전이 필요하면 확장의 톱니바퀴 → Install Another Version... → 0.3.0을 선택합니다.
+2. `.v` 또는 `.sv`를 열고 `Ctrl+Shift+P` → **slang: Show Output**을 실행합니다. 서버 시작 경로와 오류를 확인합니다. 정상적으로 작성한 하위 모듈 이름에서 F12로 선언을 열 수 있는지 확인합니다.
+3. 확장과 서버 버전 불일치가 나오면 Settings에서 `slang.path`를 검색합니다. 이전 서버를 직접 지정한 경우 해당 경로의 버전을 확인합니다. 자동 설치를 사용하려면 그 설정을 지우고 **slang: Restart Language Server**를 실행합니다.
+4. 자동 설치가 실패하면 [공식 v0.3.0 릴리스](https://github.com/hudson-trading/slang-server/releases/tag/v0.3.0)에서 자신의 OS·CPU에 맞는 서버를 받아 압축을 풉니다. Windows에서는 그 폴더의 `slang-server.exe --version`으로 확인하고, Settings의 **User** 범위 `slang.path`에 실행 파일의 실제 전체 경로를 지정한 뒤 서버를 재시작합니다. 이 개인 경로를 workspace에 커밋하지 않습니다.
+
+`.slang/server.json`은 `src`와 `sim`의 편집용 탐색 설정입니다. `-y src`는 하위 모듈 탐색 경로이며, 학생의 시뮬레이션 파일 목록을 대신하지 않습니다. **새 RTL은 `simulation.json`의 `sources`에도 추가하세요.** 편집기 진단이 없다는 사실만으로 시뮬레이션 성공을 판정하지 않습니다.
+
+### Windows PATH를 직접 등록하기
+
+OSS CAD Suite 압축을 푼 위치에서 `bin/iverilog.exe`와 `bin/vvp.exe`를 확인합니다. Windows 검색 → **계정의 환경 변수 편집** → 사용자 변수의 **Path** → **편집** → **새로 만들기**에서 그 `bin` 폴더의 전체 경로를 추가하고 확인을 누릅니다. 이미 동작하는 Icarus가 있다면 재설치할 필요가 없습니다.
+
+VS Code 창을 모두 닫고 다시 연 다음 Terminal → New Terminal에서 `where.exe iverilog`, `where.exe vvp`, `iverilog -V`, `vvp -V`를 확인합니다. 여러 설치가 나오면 맨 앞의 경로가 사용됩니다. Python도 `python --version`으로 확인하고 **01 Check tools**를 실행합니다. 확장 설치만으로 이 단계가 끝나는 것은 아닙니다.
 
 ## 4. 저장 → 시뮬레이션 → 파형 → 수정
 
